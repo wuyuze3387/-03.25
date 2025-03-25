@@ -16,7 +16,7 @@ from PIL import Image
 from io import BytesIO
 
 # 设置matplotlib支持中文和负号，这里以微软雅黑为例
-plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']
+plt.rcParams['font.sans-serif'] = ['SimSun']
 plt.rcParams['axes.unicode_minus'] = False    # 正常显示负号
 
 # 加载模型
