@@ -16,9 +16,12 @@ import matplotlib.pyplot as plt
 model_path = "RandomForestRegressor.pkl"
 model = joblib.load(model_path)
 
+# 设置页面配置和标题
+st.set_page_config(layout="wide", page_title="随机森林回归模型预测与 SHAP 可视化", page_icon="📊")
+st.title("📊 随机森林回归模型预测与 SHAP 可视化")
+st.write("通过输入特征值进行模型预测，并结合 SHAP 分析结果，了解特征对模型预测的贡献。")
 
-
-# 特征范围定义（根据提供的特征范围和数据类型）
+# 特征范围定义
 feature_ranges = {
     "年龄": {"type": "numerical", "min": 18, "max": 42, "default": 18},
     "体重": {"type": "numerical", "min": 52, "max": 91, "default": 52},
@@ -36,7 +39,7 @@ feature_ranges = {
     "妊娠合并症": {"type": "categorical", "options": [1, 2]},
     "妊娠并发症": {"type": "categorical", "options": [1, 2]},
     "喂养方式": {"type": "categorical", "options": [1, 2, 3]},
-    "新生儿是否有出生缺陷或疾病": {"type": "categorical", "options": [1, 2, 3]},
+    "新生儿是否有出生缺陷或疾病": {"type": "categorical", "options": [1, 2]},
     "家庭人均月收入": {"type": "numerical", "min": 1000, "max": 15000, "default": 1000},
     "使用无痛分娩技术": {"type": "categorical", "options": [1, 2]},
     "产时疼痛": {"type": "numerical", "min": 0, "max": 10, "default": 0},
@@ -54,22 +57,21 @@ feature_ranges = {
     "家庭支持": {"type": "numerical", "min": 0, "max": 10, "default": 0},
 }
 
-# Streamlit 界面
-st.title("Prediction Model with SHAP Visualization")
-
 # 动态生成输入项
-st.header("Enter the following feature values:")
+st.sidebar.header("特征输入区域")
+st.sidebar.write("请输入特征值：")
+
 feature_values = []
 for feature, properties in feature_ranges.items():
     if properties["type"] == "numerical":
-        value = st.number_input(
+        value = st.sidebar.number_input(
             label=f"{feature} ({properties['min']} - {properties['max']})",
             min_value=float(properties["min"]),
             max_value=float(properties["max"]),
             value=float(properties["default"]),
         )
     elif properties["type"] == "categorical":
-        value = st.selectbox(
+        value = st.sidebar.selectbox(
             label=f"{feature} (Select a value)",
             options=properties["options"],
         )
@@ -81,38 +83,33 @@ features = np.array([feature_values])
 # 预测与 SHAP 可视化
 if st.button("Predict"):
     # 模型预测
-    predicted_class = model.predict(features)[0]
-    predicted_proba = model.predict_proba(features)[0]
+    predicted_value = model.predict(features)[0]
+    st.write(f"Predicted 分娩心理创伤 score: {predicted_value:.2f}")
 
-    # 提取预测的类别概率
-    probability = predicted_proba[predicted_class] * 100
-
-    # 显示预测结果，使用 Matplotlib 渲染指定字体
-    text = f"Based on feature values, predicted possibility of AKI is {probability:.2f}%"
-    fig, ax = plt.subplots(figsize=(8, 1))
-    ax.text(
-        0.5, 0.5, text,
-        fontsize=16,
-        ha='center', va='center',
-        fontname='Times New Roman',
-        transform=ax.transAxes
-    )
-    ax.axis('off')
-    plt.savefig("prediction_text.png", bbox_inches='tight', dpi=300)
-    st.image("prediction_text.png")
-
-    # 计算 SHAP 值
+    # SHAP 解释器
     explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(pd.DataFrame([feature_values], columns=feature_ranges.keys()))
+    shap_values = explainer.shap_values(features)
 
-    # 生成 SHAP 力图
-    class_index = predicted_class  # 当前预测类别
-    shap_fig = shap.force_plot(
-        explainer.expected_value[class_index],
-        shap_values[:,:,class_index],
-        pd.DataFrame([feature_values], columns=feature_ranges.keys()),
+    # SHAP 力图
+    st.write("### SHAP 力图")
+    shap.initjs()
+    shap.force_plot(
+        explainer.expected_value,
+        shap_values[0, :],
+        features[0, :],
+        feature_names=list(feature_ranges.keys()),
         matplotlib=True,
     )
-    # 保存并显示 SHAP 图
-    plt.savefig("shap_force_plot.png", bbox_inches='tight', dpi=1200)
-    st.image("shap_force_plot.png")
+    st.pyplot()
+
+    # SHAP 摘要图
+    st.write("### SHAP 摘要图")
+    shap.summary_plot(shap_values, features, feature_names=list(feature_ranges.keys()))
+    st.pyplot()
+
+    # SHAP 依赖图
+    st.write("### SHAP 依赖图")
+    for feature in feature_ranges.keys():
+        st.write(f"#### {feature}")
+        shap.dependence_plot(feature, shap_values, features, feature_names=list(feature_ranges.keys()))
+        st.pyplot()
