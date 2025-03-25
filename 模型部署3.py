@@ -11,10 +11,17 @@ import numpy as np
 import pandas as pd
 import shap
 import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
+
+# 设置支持中文的字体
+font = FontProperties(fname='/path/to/your/chinese/font.ttf')  # 替换为你的中文字体路径
 
 # 加载模型
 model_path = "RandomForestRegressor.pkl"
 model = joblib.load(model_path)
+
+# 确保模型的特征名称与输入数据的列名匹配
+feature_names = model.get_feature_names_out()  # 获取模型的特征名称
 
 # 设置页面配置和标题
 st.set_page_config(layout="wide", page_title="随机森林回归模型预测与 SHAP 可视化", page_icon="📊")
@@ -78,7 +85,7 @@ for feature, properties in feature_ranges.items():
     feature_values.append(value)
 
 # 转换为模型输入格式
-features = np.array([feature_values])
+features = pd.DataFrame([feature_values], columns=list(feature_ranges.keys()))
 
 # 预测与 SHAP 可视化
 if st.button("Predict"):
@@ -92,7 +99,14 @@ if st.button("Predict"):
 
     # SHAP 力图
     st.write("### SHAP 力图")
+    plt.rcParams['font.sans-serif'] = ['SimHei']  # 设置字体为黑体
+    plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
     fig = plt.figure()
-    shap.force_plot(explainer.expected_value, shap_values[0, :], features[0, :], feature_names=list(feature_ranges.keys()), matplotlib=True, show=False)
+    shap.force_plot(explainer.expected_value, shap_values[0, :], features.iloc[0, :], feature_names=feature_names, matplotlib=True, show=False)
     st.pyplot(fig)
 
+    # 展示蜂群图
+    st.write("### 蜂群图")
+    # 替换下面的 URL 为你的 GitHub 图片链接
+    image_url = "https://raw.githubusercontent.com/your-username/your-repo-name/main/蜂群图.png"
+    st.image(image_url, caption='蜂群图', use_column_width=True)
