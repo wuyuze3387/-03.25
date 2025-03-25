@@ -97,17 +97,22 @@ if st.button("Predict"):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(features_df)
 
+    # 创建一个新的 matplotlib 图形对象
+    fig, ax = plt.subplots()
+    
     # SHAP 力图
-    st.write("### SHAP 力图")
-    shap.force_plot(explainer.expected_value, shap_values[0, :], features_df.iloc[0, :], feature_names=features_df.columns.tolist())
+    st.write("#### SHAP 力图")
+    force_plot = shap.force_plot(explainer.expected_value, shap_values[0, :], features_df.iloc[0, :], feature_names=features_df.columns.tolist(), matplotlib=True, show=False)
+    ax = force_plot
+    st.pyplot(fig)
 
     # 展示蜂群图
-    st.write("### 蜂群图")
+    st.write("#### 蜂群图")
     image_url = "https://raw.githubusercontent.com/wuyuze3387/-03.25/main/蜂群图.png"  # 确保这是正确的图片URL
     try:
         response = requests.get(image_url)
         response.raise_for_status()  # 确保请求成功
         img = Image.open(BytesIO(response.content))
-        st.image(img, caption='蜂群图', use_container_width=True)  # 使用 use_container_width 参数
+        st.image(img, caption='蜂群图', use_container_width=True)
     except requests.exceptions.RequestException as e:
         st.error("无法加载图片，请检查链接是否正确。错误信息：" + str(e))
