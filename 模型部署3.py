@@ -92,14 +92,7 @@ if st.button("Predict"):
 
     # SHAP 力图
     st.write("### SHAP 力图")
-    shap.initjs()
-    shap.force_plot(
-        explainer.expected_value,
-        shap_values[0, :],
-        features[0, :],
-        feature_names=list(feature_ranges.keys()),
-        matplotlib=True,
-    )
-    st.pyplot()
-
+    fig = plt.figure()
+    shap.force_plot(explainer.expected_value, shap_values[0, :], features[0, :], feature_names=list(feature_ranges.keys()), matplotlib=True, show=False)
+    st.pyplot(fig)
 
