@@ -10,11 +10,6 @@ import joblib
 import numpy as np
 import pandas as pd
 import shap
-import matplotlib.pyplot as plt
-
-# 设置matplotlib支持中文和负号
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 设置字体为黑体
-plt.rcParams['axes.unicode_minus'] = False    # 正常显示负号
 
 # 加载模型
 model_path = "RandomForestRegressor.pkl"
@@ -96,16 +91,4 @@ if st.button("Predict"):
 
     # SHAP 力图
     st.write("### SHAP 力图")
-    force_plot = shap.force_plot(
-        explainer.expected_value,
-        shap_values[0, :],
-        features[0, :],
-        feature_names=list(feature_ranges.keys()),
-        matplotlib=True,
-        show=False
-    )
-    st.pyplot(force_plot)
-
-    # 保存SHAP力图为HTML文件并在Streamlit中显示
-    # shap.save_html('shap_plot.html', force_plot)
-    # st.components.v1.html(open('shap_plot.html').read(), height=600)
+    shap.plots.force(explainer.expected_value, shap_values[0, :], features[0, :], feature_names=list(feature_ranges.keys()))
