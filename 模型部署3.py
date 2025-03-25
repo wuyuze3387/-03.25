@@ -96,15 +96,10 @@ if st.button("Predict"):
 
     # SHAP 力图
     st.write("### SHAP 力图")
-    force_plot = shap.force_plot(
-        explainer.expected_value,
-        shap_values[0, :],
-        features[0, :],
-        feature_names=list(feature_ranges.keys()),
-        matplotlib=True,
-        show=False
-    )
-    st.pyplot(force_plot)
+    fig = plt.figure()
+    shap.force_plot(explainer.expected_value, shap_values[0, :], features[0, :], feature_names=list(feature_ranges.keys()), matplotlib=True, show=False)
+    plt.xticks(rotation=45)  # 旋转x轴标签，避免重叠
+    st.pyplot(fig)
 
     # 保存SHAP力图为HTML文件并在Streamlit中显示
     # shap.save_html('shap_plot.html', force_plot)
