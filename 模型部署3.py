@@ -16,17 +16,7 @@ import matplotlib.pyplot as plt
 model_path = "RandomForestRegressor.pkl"
 model = joblib.load(model_path)
 
-# 设置页面配置和标题
-st.set_page_config(layout="wide", page_title="随机森林回归模型预测与 SHAP 可视化", page_icon="📊")
 
-st.title("📊 随机森林回归模型预测与 SHAP 可视化分析")
-st.write("""
-通过输入特征值进行模型预测，并结合 SHAP 分析结果，了解特征对模型预测的贡献。
-""")
-
-# 左侧侧边栏输入区域
-st.sidebar.header("特征输入区域")
-st.sidebar.write("请输入特征值：")
 
 # 特征范围定义（根据提供的特征范围和数据类型）
 feature_ranges = {
