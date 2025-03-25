@@ -11,7 +11,9 @@ import numpy as np
 import pandas as pd
 import shap
 import matplotlib.pyplot as plt
-
+# 设置matplotlib支持中文和负号
+plt.rcParams['font.sans-serif'] = ['SimHei']  # 设置字体为黑体
+plt.rcParams['axes.unicode_minus'] = False    # 正常显示负号
 # 加载模型
 model_path = "RandomForestRegressor.pkl"
 model = joblib.load(model_path)
