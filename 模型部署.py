@@ -108,6 +108,6 @@ if st.button("Predict"):
         response = requests.get(image_url)
         response.raise_for_status()  # 确保请求成功
         img = Image.open(BytesIO(response.content))
-        st.image(img, caption='蜂群图', use_column_width=True)
+        st.image(img, caption='蜂群图', use_container_width=True)  # 使用 use_container_width 参数
     except requests.exceptions.RequestException as e:
         st.error("无法加载图片，请检查链接是否正确。错误信息：" + str(e))
