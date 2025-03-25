@@ -26,7 +26,7 @@ model = joblib.load(model_path)
 # 设置页面配置和标题
 st.set_page_config(layout="wide", page_title="随机森林回归模型预测与 SHAP 可视化", page_icon="💕👩‍⚕️🏥")
 st.title("💕👩‍⚕️🏥 随机森林回归模型预测与 SHAP 可视化")
-st.write("通过输入所有变量的值进行单个样本分娩心理创伤的风险预测，可以得到该样本罹患分娩心理创伤的概率，并结合 SHAP 瀑布图分析结果，有助于临床医护人员了解具体的风险因素和保护因素。")
+st.write("通过输入所有变量的值进行单个样本分娩心理创伤的风险预测，可以得到该样本罹患分娩心理创伤的概率，并结合 SHAP 力图分析结果，有助于临床医护人员了解具体的风险因素和保护因素。")
 
 # 特征范围定义
 feature_ranges = {
@@ -97,21 +97,25 @@ if st.button("Predict"):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(features)
 
-    # SHAP 瀑布图
-    st.write("### SHAP 瀑布图")
-    shap.initjs()
-    shap_plot = shap.waterfall_plot(
+    # SHAP 力图
+    st.write("### SHAP 力图")
+    force_plot = shap.force_plot(
         explainer.expected_value,
         shap_values[0, :],
         features[0, :],
         feature_names=list(feature_ranges.keys()),
+        matplotlib=True,
         show=False
     )
-    st.pyplot(shap_plot)
+    st.pyplot(force_plot)
+
+    # 保存SHAP力图为HTML文件并在Streamlit中显示
+    # shap.save_html('shap_plot.html', force_plot)
+    # st.components.v1.html(open('shap_plot.html').read(), height=600)
 
     # 展示蜂群图
     st.write("### 蜂群图")
-    image_url = "https://raw.githubusercontent.com/wuyuze3387/-03.25/main/蜂群图.png"
+    image_url = "https://raw.githubusercontent.com/wuyuze3387/-03.25/main/蜂群图.png"  # 确保这是正确的图片URL
     try:
         response = requests.get(image_url)
         response.raise_for_status()  # 确保请求成功
