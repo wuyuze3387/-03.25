@@ -77,18 +77,18 @@ for feature, properties in feature_ranges.items():
     feature_values.append(value)
 
 # 转换为模型输入格式
-features = np.array([feature_values])
+features_df = pd.DataFrame([feature_values], columns=list(feature_ranges.keys()))
 
 # 预测与 SHAP 可视化
 if st.button("Predict"):
     # 模型预测
-    predicted_value = model.predict(features)[0]
+    predicted_value = model.predict(features_df)[0]
     st.write(f"Predicted 分娩心理创伤 score: {predicted_value:.2f}")
 
     # SHAP 解释器
     explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(features)
+    shap_values = explainer.shap_values(features_df)
 
     # SHAP 力图
     st.write("### SHAP 力图")
-    shap.plots.force(explainer.expected_value, shap_values[0, :], features[0, :], feature_names=list(feature_ranges.keys()))
+    shap.plots.force(explainer.expected_value, shap_values[0, :], features_df.iloc[0, :], feature_names=features_df.columns.tolist())
