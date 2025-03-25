@@ -19,7 +19,7 @@ model = joblib.load(model_path)
 # 设置页面配置和标题
 st.set_page_config(layout="wide", page_title="随机森林回归模型预测与 SHAP 可视化", page_icon="📊")
 st.title("📊 随机森林回归模型预测与 SHAP 可视化")
-st.write("通过输入特征值进行模型预测，并结合 SHAP 分析结果，了解特征对模型预测的贡献。")
+st.write("通过输入所有变量的值进行单个样本分娩心理创伤的风险预测，可以得到该样本罹患分娩心理创伤的概率，并结合 SHAP 力图分析结果，有助于临床医护人员了解具体的风险因素和保护因素。")
 
 # 特征范围定义
 feature_ranges = {
@@ -102,14 +102,4 @@ if st.button("Predict"):
     )
     st.pyplot()
 
-    # SHAP 摘要图
-    st.write("### SHAP 摘要图")
-    shap.summary_plot(shap_values, features, feature_names=list(feature_ranges.keys()))
-    st.pyplot()
 
-    # SHAP 依赖图
-    st.write("### SHAP 依赖图")
-    for feature in feature_ranges.keys():
-        st.write(f"#### {feature}")
-        shap.dependence_plot(feature, shap_values, features, feature_names=list(feature_ranges.keys()))
-        st.pyplot()
