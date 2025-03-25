@@ -11,9 +11,6 @@ import numpy as np
 import pandas as pd
 import shap
 import matplotlib.pyplot as plt
-import requests
-from PIL import Image
-from io import BytesIO
 
 # 设置matplotlib支持中文和负号
 plt.rcParams['font.sans-serif'] = ['SimHei']  # 设置字体为黑体
@@ -38,7 +35,7 @@ feature_ranges = {
     "学历": {"type": "categorical", "options": [1, 2, 3, 4]},
     "医疗费用支付方式": {"type": "categorical", "options": [1, 2, 3]},
     "怀孕次数": {"type": "numerical", "min": 1, "max": 8, "default": 1},
-    "分娩次数": {"type": "numerical", "max": 4, "default": 1},
+    "分娩次数": {"type": "numerical", "min": 1, "max": 4, "default": 1},
     "分娩方式": {"type": "categorical", "options": [1, 2, 3]},
     "不良孕产史": {"type": "categorical", "options": [1, 2]},
     "终止妊娠经历": {"type": "categorical", "options": [1, 2]},
@@ -73,9 +70,9 @@ for feature, properties in feature_ranges.items():
     if properties["type"] == "numerical":
         value = st.sidebar.number_input(
             label=f"{feature} ({properties['min']} - {properties['max']})",
-            min_value=properties["min"],
-            max_value=properties["max"],
-            value=properties["default"],
+            min_value=float(properties["min"]),
+            max_value=float(properties["max"]),
+            value=float(properties["default"]),
         )
     elif properties["type"] == "categorical":
         value = st.sidebar.selectbox(
@@ -85,33 +82,30 @@ for feature, properties in feature_ranges.items():
     feature_values.append(value)
 
 # 转换为模型输入格式
-features_df = pd.DataFrame([feature_values], columns=list(feature_ranges.keys()))
+features = np.array([feature_values])
 
 # 预测与 SHAP 可视化
 if st.button("Predict"):
     # 模型预测
-    predicted_value = model.predict(features_df)[0]
+    predicted_value = model.predict(features)[0]
     st.write(f"Predicted 分娩心理创伤 score: {predicted_value:.2f}")
 
     # SHAP 解释器
     explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(features_df)
+    shap_values = explainer.shap_values(features)
 
-    # 创建 matplotlib 图形对象
-    fig, ax = plt.subplots()
-    
     # SHAP 力图
     st.write("### SHAP 力图")
-    shap.force_plot(explainer.expected_value, shap_values[0, :], features_df.iloc[0, :], feature_names=features_df.columns.tolist(), matplotlib=True, show=False, ax=ax)
-    st.pyplot(fig)
+    force_plot = shap.force_plot(
+        explainer.expected_value,
+        shap_values[0, :],
+        features[0, :],
+        feature_names=list(feature_ranges.keys()),
+        matplotlib=True,
+        show=False
+    )
+    st.pyplot(force_plot)
 
-    # 展示蜂群图
-    st.write("### 蜂群图")
-    image_url = "https://raw.githubusercontent.com/wuyuze3387/-03.25/main/蜂群图.png"  # 确保这是正确的图片URL
-    try:
-        response = requests.get(image_url)
-        response.raise_for_status()  # 确保请求成功
-        img = Image.open(BytesIO(response.content))
-        st.image(img, caption='蜂群图', use_container_width=True)  # 使用 use_container_width 参数
-    except requests.exceptions.RequestException as e:
-        st.error("无法加载图片，请检查链接是否正确。错误信息：" + str(e))
+    # 保存SHAP力图为HTML文件并在Streamlit中显示
+    # shap.save_html('shap_plot.html', force_plot)
+    # st.components.v1.html(open('shap_plot.html').read(), height=600)
